@@ -86,6 +86,24 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./src/js/modules/cards.js":
+/*!*********************************!*\
+  !*** ./src/js/modules/cards.js ***!
+  \*********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _services_services__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../services/services */ "./src/js/services/services.js");
+
+function cards() {
+  Object(_services_services__WEBPACK_IMPORTED_MODULE_0__["getResource"])('https://test-4abc2-default-rtdb.firebaseio.com/goods.json').then(data => console.log(data));
+}
+/* harmony default export */ __webpack_exports__["default"] = (cards);
+
+/***/ }),
+
 /***/ "./src/js/modules/modal.js":
 /*!*********************************!*\
   !*** ./src/js/modules/modal.js ***!
@@ -163,13 +181,48 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _modules_modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/modal */ "./src/js/modules/modal.js");
+/* harmony import */ var _modules_cards__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/cards */ "./src/js/modules/cards.js");
+/* harmony import */ var _modules_modal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/modal */ "./src/js/modules/modal.js");
+
 
 window.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
-  Object(_modules_modal__WEBPACK_IMPORTED_MODULE_0__["default"])('#cart', '.cart', '.cart-close', '.cart-body', 'cart-confirm');
+  Object(_modules_modal__WEBPACK_IMPORTED_MODULE_1__["default"])('#cart', '.cart', '.cart-close', '.cart-body', 'cart-confirm');
+  Object(_modules_cards__WEBPACK_IMPORTED_MODULE_0__["default"])();
 });
+
+/***/ }),
+
+/***/ "./src/js/services/services.js":
+/*!*************************************!*\
+  !*** ./src/js/services/services.js ***!
+  \*************************************/
+/*! exports provided: postData, getResource */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "postData", function() { return postData; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getResource", function() { return getResource; });
+const postData = async (url, data) => {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      'Content-type': 'application/json'
+    },
+    body: data
+  });
+  return await res.json();
+};
+const getResource = async url => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+  }
+  return await res.json();
+};
+
 
 /***/ })
 
