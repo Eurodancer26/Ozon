@@ -1,8 +1,15 @@
-import cards from './modules/cards';
+import load from './modules/load';
 import modal from './modules/modal';
+import search from './modules/search';
+import catalog from './modules/catalog';
+
 
 window.addEventListener('DOMContentLoaded', () => {
     'use strict';
+    
+
     modal('#cart', '.cart', '.cart-close', '.cart-body', 'cart-confirm');
-    cards();
+    search();
+    load();
+    catalog();
 });

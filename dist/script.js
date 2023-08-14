@@ -86,21 +86,110 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/js/modules/cards.js":
-/*!*********************************!*\
-  !*** ./src/js/modules/cards.js ***!
-  \*********************************/
+/***/ "./src/js/modules/catalog.js":
+/*!***********************************!*\
+  !*** ./src/js/modules/catalog.js ***!
+  \***********************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _services_services__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../services/services */ "./src/js/services/services.js");
+/* harmony import */ var _render__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./render */ "./src/js/modules/render.js");
+/* harmony import */ var _filters__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./filters */ "./src/js/modules/filters.js");
 
-function cards() {
-  Object(_services_services__WEBPACK_IMPORTED_MODULE_0__["getResource"])('https://test-4abc2-default-rtdb.firebaseio.com/goods.json').then(data => console.log(data));
-}
-/* harmony default export */ __webpack_exports__["default"] = (cards);
+
+
+const catalog = () => {
+  const btnCatalog = document.querySelector('.catalog-button > button'),
+    itemCatalog = document.querySelectorAll('.catalog li');
+  console.log();
+  let isOpen;
+  function openCatalog() {
+    document.querySelector('.catalog').style.display = 'block';
+    attachCatalogEvents();
+  }
+  function closeCatalog() {
+    document.querySelector('.catalog').style.display = '';
+    detachCatalogEvents();
+  }
+  function attachCatalogEvents() {
+    btnCatalog.addEventListener('click', closeCatalog);
+    btnCatalog.addEventListener('click', handleBtnCatalog);
+    document.querySelector('.catalog').addEventListener('click', handleOutside);
+  }
+  function handleBtnCatalog() {
+    if (!isOpen) {
+      closeCatalog();
+    }
+  }
+  function handleOutside(e) {
+    const isClickOutside = !!e.target.closest('catalog');
+    if (!isClickOutside) {
+      closeCatalog();
+    }
+  }
+  function detachCatalogEvents() {
+    btnCatalog.removeEventListener('click', closeCatalog);
+    btnCatalog.removeEventListener('click', handleBtnCatalog);
+    document.querySelector('.catalog').removeEventListener('click', handleOutside);
+  }
+  btnCatalog.addEventListener('click', openCatalog);
+  itemCatalog.forEach(item => {
+    item.addEventListener('click', () => {
+      const text = item.textContent;
+      Object(_services_services__WEBPACK_IMPORTED_MODULE_0__["getResource"])().then(goods => {
+        Object(_render__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(_filters__WEBPACK_IMPORTED_MODULE_2__["categoryFilter"])(goods, text));
+      });
+    });
+  });
+};
+/* harmony default export */ __webpack_exports__["default"] = (catalog);
+
+/***/ }),
+
+/***/ "./src/js/modules/filters.js":
+/*!***********************************!*\
+  !*** ./src/js/modules/filters.js ***!
+  \***********************************/
+/*! exports provided: searchFilter, categoryFilter */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "searchFilter", function() { return searchFilter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "categoryFilter", function() { return categoryFilter; });
+const searchFilter = (goods, value) => {
+  return goods.filter(goodsItem => goodsItem.title.toLowerCase().includes(value.toLowerCase()));
+};
+const categoryFilter = (goods, value) => {
+  return goods.filter(goodsItem => goodsItem.category.includes(value));
+};
+
+
+/***/ }),
+
+/***/ "./src/js/modules/load.js":
+/*!********************************!*\
+  !*** ./src/js/modules/load.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _services_services__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../services/services */ "./src/js/services/services.js");
+/* harmony import */ var _render__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./render */ "./src/js/modules/render.js");
+
+
+
+const load = url => {
+  Object(_services_services__WEBPACK_IMPORTED_MODULE_0__["getResource"])(url).then(goods => {
+    Object(_render__WEBPACK_IMPORTED_MODULE_1__["default"])(goods);
+  });
+};
+/* harmony default export */ __webpack_exports__["default"] = (load);
 
 /***/ }),
 
@@ -172,6 +261,72 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
 
 /***/ }),
 
+/***/ "./src/js/modules/render.js":
+/*!**********************************!*\
+  !*** ./src/js/modules/render.js ***!
+  \**********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+const render = goods => {
+  const goodsWrap = document.querySelector('.goods');
+  goodsWrap.innerHTML = '';
+  goods.forEach(item => {
+    goodsWrap.insertAdjacentHTML('beforeend', `
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <div class="card">
+                    ${item.sale === true ? `<div class="card-sale">🔥Hot Sale🔥</div>` : ''}
+                    <div class="card-img-wrapper">
+                        <span class="card-img-top"
+                            style="background-image: url('${item.img}')"></span>
+                    </div>
+                    <div class="card-body justify-content-between">
+                        <div class="card-price">${item.price}</div>
+                        <h5 class="card-title">${item.title}</h5>
+                        <button class="btn btn-primary">В корзину</button>
+                    </div>
+                </div>
+            </div>
+        `);
+  });
+};
+
+// https://test-4abc2-default-rtdb.firebaseio.com/goods.json
+
+/* harmony default export */ __webpack_exports__["default"] = (render);
+
+/***/ }),
+
+/***/ "./src/js/modules/search.js":
+/*!**********************************!*\
+  !*** ./src/js/modules/search.js ***!
+  \**********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _services_services__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../services/services */ "./src/js/services/services.js");
+/* harmony import */ var _render__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./render */ "./src/js/modules/render.js");
+/* harmony import */ var _filters__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./filters */ "./src/js/modules/filters.js");
+
+
+
+const search = () => {
+  const searchInput = document.querySelector('.search-wrapper_input');
+  searchInput.addEventListener('input', e => {
+    const value = e.target.value;
+    Object(_services_services__WEBPACK_IMPORTED_MODULE_0__["getResource"])().then(goods => {
+      Object(_render__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(_filters__WEBPACK_IMPORTED_MODULE_2__["searchFilter"])(goods, value));
+    });
+  });
+};
+/* harmony default export */ __webpack_exports__["default"] = (search);
+
+/***/ }),
+
 /***/ "./src/js/script.js":
 /*!**************************!*\
   !*** ./src/js/script.js ***!
@@ -181,15 +336,21 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _modules_cards__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/cards */ "./src/js/modules/cards.js");
+/* harmony import */ var _modules_load__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/load */ "./src/js/modules/load.js");
 /* harmony import */ var _modules_modal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/modal */ "./src/js/modules/modal.js");
+/* harmony import */ var _modules_search__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/search */ "./src/js/modules/search.js");
+/* harmony import */ var _modules_catalog__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/catalog */ "./src/js/modules/catalog.js");
+
+
 
 
 window.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
   Object(_modules_modal__WEBPACK_IMPORTED_MODULE_1__["default"])('#cart', '.cart', '.cart-close', '.cart-body', 'cart-confirm');
-  Object(_modules_cards__WEBPACK_IMPORTED_MODULE_0__["default"])();
+  Object(_modules_search__WEBPACK_IMPORTED_MODULE_2__["default"])();
+  Object(_modules_load__WEBPACK_IMPORTED_MODULE_0__["default"])();
+  Object(_modules_catalog__WEBPACK_IMPORTED_MODULE_3__["default"])();
 });
 
 /***/ }),
@@ -215,12 +376,13 @@ const postData = async (url, data) => {
   });
   return await res.json();
 };
-const getResource = async url => {
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+const getResource = async str => {
+  try {
+    const res = await fetch(`https://test-4abc2-default-rtdb.firebaseio.com/goods.json?${str ? `search=${str}` : ''}`);
+    return await res.json();
+  } catch (error) {
+    console.error(error.message);
   }
-  return await res.json();
 };
 
 

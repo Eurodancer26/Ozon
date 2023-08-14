@@ -11,14 +11,15 @@ const postData = async (url, data) => {
     return await res.json();
 };
 
-const getResource = async (url) => {
-    const res = await fetch(url);
+const getResource = async (str) => {
+    try {
+        const res = await fetch(`https://test-4abc2-default-rtdb.firebaseio.com/goods.json?${str ? `search=${str}` : ''}`);
+        
 
-    if (!res.ok) {
-        throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+        return await res.json();
+    } catch (error) {
+        console.error(error.message);
     }
-
-    return await res.json();
 };
 
 export {postData, getResource};
