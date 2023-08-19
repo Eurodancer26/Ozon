@@ -4,8 +4,9 @@ import search from './modules/search';
 import catalog from './modules/catalog';
 
 
+
 window.addEventListener('DOMContentLoaded', () => {
-    'use strict';
+    
     
 
     modal('#cart', '.cart', '.cart-close', '.cart-body', 'cart-confirm');

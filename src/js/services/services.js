@@ -11,9 +11,9 @@ const postData = async (url, data) => {
     return await res.json();
 };
 
-const getResource = async (str) => {
+const getResource = async (value) => {
     try {
-        const res = await fetch(`https://test-4abc2-default-rtdb.firebaseio.com/goods.json?${str ? `search=${str}` : ''}`);
+        const res = await fetch(`https://test-4abc2-default-rtdb.firebaseio.com/goods.json?${value ? `search=${value}` : ''}`);
         
 
         return await res.json();

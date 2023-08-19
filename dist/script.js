@@ -153,18 +153,53 @@ const catalog = () => {
 /*!***********************************!*\
   !*** ./src/js/modules/filters.js ***!
   \***********************************/
-/*! exports provided: searchFilter, categoryFilter */
+/*! exports provided: categoryFilter, funcFilter */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "searchFilter", function() { return searchFilter; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "categoryFilter", function() { return categoryFilter; });
-const searchFilter = (goods, value) => {
-  return goods.filter(goodsItem => goodsItem.title.toLowerCase().includes(value.toLowerCase()));
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "funcFilter", function() { return funcFilter; });
+const categoryFilter = (goods, val) => {
+  return goods.filter(goodsItem => goodsItem.category.includes(val));
 };
-const categoryFilter = (goods, value) => {
-  return goods.filter(goodsItem => goodsItem.category.includes(value));
+function funcFilter(goods, minVal, maxVal, checkSale, searchVal) {
+  return goods.filter(goodsItem => {
+    const isMin = minVal ? goodsItem.price >= minVal : true,
+      isMax = maxVal ? goodsItem.price <= maxVal : true,
+      isSale = checkSale ? goodsItem.sale : true;
+    console.log(isSale);
+    return isMin && isMax && isSale && goodsItem.title.toLowerCase().includes(searchVal.toLowerCase());
+  });
+}
+;
+
+
+/***/ }),
+
+/***/ "./src/js/modules/helpers.js":
+/*!***********************************!*\
+  !*** ./src/js/modules/helpers.js ***!
+  \***********************************/
+/*! exports provided: debounce */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "debounce", function() { return debounce; });
+var _this = undefined;
+const debounce = function (func) {
+  let ms = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 500;
+  let timerId;
+  return function () {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    clearTimeout(timerId);
+    timerId = setTimeout(() => {
+      func.apply(_this, args);
+    }, ms);
+  };
 };
 
 
@@ -311,17 +346,49 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _services_services__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../services/services */ "./src/js/services/services.js");
 /* harmony import */ var _render__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./render */ "./src/js/modules/render.js");
 /* harmony import */ var _filters__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./filters */ "./src/js/modules/filters.js");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./helpers */ "./src/js/modules/helpers.js");
+
 
 
 
 const search = () => {
-  const searchInput = document.querySelector('.search-wrapper_input');
-  searchInput.addEventListener('input', e => {
-    const value = e.target.value;
+  const searchInput = document.querySelector('.search-wrapper_input'),
+    minInp = document.getElementById('min'),
+    maxInp = document.getElementById('max'),
+    labelCheckSale = document.querySelector('.filter-check_checkmark');
+  function checkNumInput(e) {
+    if (e.key.match(/[^0-9]/ig)) {
+      e.preventDefault();
+    }
+  }
+  const debounceFunc = Object(_helpers__WEBPACK_IMPORTED_MODULE_3__["debounce"])(function () {
+    let min = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+    let max = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+    let sale = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+    let searchInput = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '';
     Object(_services_services__WEBPACK_IMPORTED_MODULE_0__["getResource"])().then(goods => {
-      Object(_render__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(_filters__WEBPACK_IMPORTED_MODULE_2__["searchFilter"])(goods, value));
+      Object(_render__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(_filters__WEBPACK_IMPORTED_MODULE_2__["funcFilter"])(goods, min, max, sale, searchInput));
     });
+  }, 800);
+  function showChecked() {
+    if (!labelCheckSale.classList.contains('checked')) {
+      labelCheckSale.classList.add('checked');
+    } else {
+      labelCheckSale.classList.remove('checked');
+    }
+  }
+  searchInput.addEventListener('input', () => {
+    debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value);
   });
+  labelCheckSale.addEventListener('click', () => {
+    showChecked();
+    debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value);
+  });
+  minInp.addEventListener('input', () => debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value));
+  minInp.addEventListener('keypress', checkNumInput);
+  maxInp.addEventListener('input', () => debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value));
+  maxInp.addEventListener('keypress', checkNumInput);
+  console.log(checkInp.checked, labelCheckSale.classList.contains('checked'));
 };
 /* harmony default export */ __webpack_exports__["default"] = (search);
 
@@ -345,8 +412,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 window.addEventListener('DOMContentLoaded', () => {
-  'use strict';
-
   Object(_modules_modal__WEBPACK_IMPORTED_MODULE_1__["default"])('#cart', '.cart', '.cart-close', '.cart-body', 'cart-confirm');
   Object(_modules_search__WEBPACK_IMPORTED_MODULE_2__["default"])();
   Object(_modules_load__WEBPACK_IMPORTED_MODULE_0__["default"])();
@@ -376,9 +441,9 @@ const postData = async (url, data) => {
   });
   return await res.json();
 };
-const getResource = async str => {
+const getResource = async value => {
   try {
-    const res = await fetch(`https://test-4abc2-default-rtdb.firebaseio.com/goods.json?${str ? `search=${str}` : ''}`);
+    const res = await fetch(`https://test-4abc2-default-rtdb.firebaseio.com/goods.json?${value ? `search=${value}` : ''}`);
     return await res.json();
   } catch (error) {
     console.error(error.message);

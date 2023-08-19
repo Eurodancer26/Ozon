@@ -1,11 +1,16 @@
-const searchFilter = (goods, value) => {
-    
-    return goods.filter(goodsItem => goodsItem.title.toLowerCase().includes(value.toLowerCase()));
+const categoryFilter = (goods, val) => {
+    return goods.filter(goodsItem => goodsItem.category.includes(val));
 };
 
-const categoryFilter = (goods, value) => {
+function funcFilter (goods, minVal, maxVal, checkSale, searchVal) {
+    return goods.filter((goodsItem) => {
+        const isMin = minVal ? goodsItem.price >= minVal : true,
+              isMax = maxVal ? goodsItem.price <= maxVal : true,
+              isSale = checkSale ? goodsItem.sale : true;
+              console.log(isSale);
+        return isMin && isMax && isSale && goodsItem.title.toLowerCase().includes(searchVal.toLowerCase());
+    });
     
-    return goods.filter(goodsItem => goodsItem.category.includes(value));
 };
 
-export {searchFilter, categoryFilter};
+export {categoryFilter, funcFilter};
