@@ -1,12 +1,5 @@
-import {getResource} from '../services/services';
-import render from './render';
-import {categoryFilter} from './filters';
-
 const catalog = () => {
-    const btnCatalog = document.querySelector('.catalog-button > button'),
-          itemCatalog = document.querySelectorAll('.catalog li');
-
-    console.log();
+    const btnCatalog = document.querySelector('.catalog-button > button');
 
     let isOpen; 
 
@@ -23,7 +16,7 @@ const catalog = () => {
     function attachCatalogEvents() {
         btnCatalog.addEventListener('click', closeCatalog);
         btnCatalog.addEventListener('click', handleBtnCatalog);
-        document.querySelector('.catalog').addEventListener('click', handleOutside);
+        document.querySelector('.catalog').addEventListener('click', handleCatalog);
     }
 
     
@@ -33,9 +26,9 @@ const catalog = () => {
         }
     }
 
-    function handleOutside(e) {
-        const isClickOutside = !!e.target.closest('catalog');
-        if (!isClickOutside) {
+    function handleCatalog(e) {
+        const isClick = !!e.target.closest('.catalog-list');
+        if (isClick) {
             closeCatalog();
         }
     }
@@ -43,20 +36,10 @@ const catalog = () => {
     function detachCatalogEvents() {
         btnCatalog.removeEventListener('click', closeCatalog);
         btnCatalog.removeEventListener('click', handleBtnCatalog);
-        document.querySelector('.catalog').removeEventListener('click', handleOutside);
+        document.querySelector('.catalog').removeEventListener('click', handleCatalog);
     }
 
     btnCatalog.addEventListener('click', openCatalog);
-
-    itemCatalog.forEach(item => {
-        item.addEventListener('click', () => {
-            const text = item.textContent;
-            getResource().then(goods => {
-                render(categoryFilter(goods, text));
-            });
-        });
-    });
-
 };
 
 export default catalog;

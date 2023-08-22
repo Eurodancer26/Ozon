@@ -95,16 +95,8 @@
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _services_services__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../services/services */ "./src/js/services/services.js");
-/* harmony import */ var _render__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./render */ "./src/js/modules/render.js");
-/* harmony import */ var _filters__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./filters */ "./src/js/modules/filters.js");
-
-
-
 const catalog = () => {
-  const btnCatalog = document.querySelector('.catalog-button > button'),
-    itemCatalog = document.querySelectorAll('.catalog li');
-  console.log();
+  const btnCatalog = document.querySelector('.catalog-button > button');
   let isOpen;
   function openCatalog() {
     document.querySelector('.catalog').style.display = 'block';
@@ -117,33 +109,25 @@ const catalog = () => {
   function attachCatalogEvents() {
     btnCatalog.addEventListener('click', closeCatalog);
     btnCatalog.addEventListener('click', handleBtnCatalog);
-    document.querySelector('.catalog').addEventListener('click', handleOutside);
+    document.querySelector('.catalog').addEventListener('click', handleCatalog);
   }
   function handleBtnCatalog() {
     if (!isOpen) {
       closeCatalog();
     }
   }
-  function handleOutside(e) {
-    const isClickOutside = !!e.target.closest('catalog');
-    if (!isClickOutside) {
+  function handleCatalog(e) {
+    const isClick = !!e.target.closest('.catalog-list');
+    if (isClick) {
       closeCatalog();
     }
   }
   function detachCatalogEvents() {
     btnCatalog.removeEventListener('click', closeCatalog);
     btnCatalog.removeEventListener('click', handleBtnCatalog);
-    document.querySelector('.catalog').removeEventListener('click', handleOutside);
+    document.querySelector('.catalog').removeEventListener('click', handleCatalog);
   }
   btnCatalog.addEventListener('click', openCatalog);
-  itemCatalog.forEach(item => {
-    item.addEventListener('click', () => {
-      const text = item.textContent;
-      Object(_services_services__WEBPACK_IMPORTED_MODULE_0__["getResource"])().then(goods => {
-        Object(_render__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(_filters__WEBPACK_IMPORTED_MODULE_2__["categoryFilter"])(goods, text));
-      });
-    });
-  });
 };
 /* harmony default export */ __webpack_exports__["default"] = (catalog);
 
@@ -153,23 +137,20 @@ const catalog = () => {
 /*!***********************************!*\
   !*** ./src/js/modules/filters.js ***!
   \***********************************/
-/*! exports provided: categoryFilter, funcFilter */
+/*! exports provided: funcFilter */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "categoryFilter", function() { return categoryFilter; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "funcFilter", function() { return funcFilter; });
-const categoryFilter = (goods, val) => {
-  return goods.filter(goodsItem => goodsItem.category.includes(val));
-};
-function funcFilter(goods, minVal, maxVal, checkSale, searchVal) {
+function funcFilter(goods, minVal, maxVal, checkSale, searchVal, categoryVal) {
   return goods.filter(goodsItem => {
     const isMin = minVal ? goodsItem.price >= minVal : true,
       isMax = maxVal ? goodsItem.price <= maxVal : true,
-      isSale = checkSale ? goodsItem.sale : true;
-    console.log(isSale);
-    return isMin && isMax && isSale && goodsItem.title.toLowerCase().includes(searchVal.toLowerCase());
+      isSale = checkSale ? goodsItem.sale : true,
+      isCategory = categoryVal ? goodsItem.category.includes(categoryVal) : true,
+      isTitle = searchVal ? goodsItem.title.toLowerCase().includes(searchVal.toLowerCase()) : true;
+    return isMin && isMax && isSale && isTitle && isCategory;
   });
 }
 ;
@@ -355,7 +336,9 @@ const search = () => {
   const searchInput = document.querySelector('.search-wrapper_input'),
     minInp = document.getElementById('min'),
     maxInp = document.getElementById('max'),
-    labelCheckSale = document.querySelector('.filter-check_checkmark');
+    labelCheckSale = document.querySelector('.filter-check_checkmark'),
+    itemCatalog = document.querySelectorAll('.catalog li');
+  let _category;
   function checkNumInput(e) {
     if (e.key.match(/[^0-9]/ig)) {
       e.preventDefault();
@@ -366,8 +349,9 @@ const search = () => {
     let max = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
     let sale = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
     let searchInput = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '';
+    let categoryVal = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : '';
     Object(_services_services__WEBPACK_IMPORTED_MODULE_0__["getResource"])().then(goods => {
-      Object(_render__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(_filters__WEBPACK_IMPORTED_MODULE_2__["funcFilter"])(goods, min, max, sale, searchInput));
+      Object(_render__WEBPACK_IMPORTED_MODULE_1__["default"])(Object(_filters__WEBPACK_IMPORTED_MODULE_2__["funcFilter"])(goods, min, max, sale, searchInput, categoryVal));
     });
   }, 800);
   function showChecked() {
@@ -377,18 +361,26 @@ const search = () => {
       labelCheckSale.classList.remove('checked');
     }
   }
+  itemCatalog.forEach(item => {
+    item.addEventListener('click', () => {
+      _category = item.textContent;
+      console.log(_category);
+      Object(_services_services__WEBPACK_IMPORTED_MODULE_0__["getResource"])().then(goods => {
+        debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value, _category);
+      });
+    });
+  });
   searchInput.addEventListener('input', () => {
-    debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value);
+    debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value, _category);
   });
   labelCheckSale.addEventListener('click', () => {
     showChecked();
-    debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value);
+    debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value, _category);
   });
-  minInp.addEventListener('input', () => debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value));
+  minInp.addEventListener('input', () => debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value, _category));
   minInp.addEventListener('keypress', checkNumInput);
-  maxInp.addEventListener('input', () => debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value));
+  maxInp.addEventListener('input', () => debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value, _category));
   maxInp.addEventListener('keypress', checkNumInput);
-  console.log(checkInp.checked, labelCheckSale.classList.contains('checked'));
 };
 /* harmony default export */ __webpack_exports__["default"] = (search);
 
