@@ -1,14 +1,18 @@
-const render = (goods) => {
+const renderCart = (goods) => {
     
-    const goodsWrap = document.querySelector('.goods');
+    const cartWrap = document.querySelector('.cart-wrapper');
 
-    localStorage.setItem('goods', JSON.stringify(goods));
-    
-    goodsWrap.innerHTML = ''; 
-     
-    goods.forEach(item => {       
-        goodsWrap.insertAdjacentHTML('beforeend', `
-            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+    cartWrap.innerHTML = '';
+
+    if (goods.length === 0) {
+        cartWrap.insertAdjacentHTML('beforeend', `
+            <div id="cart-empty">
+                Ваша корзина пока пуста
+            </div>
+        `);
+    } else {
+        goods.forEach(item => {       
+            cartWrap.insertAdjacentHTML('beforeend', `
                 <div class="card" data-key="${item.id}">
                     ${item.sale === true ? `<div class="card-sale">🔥Hot Sale🔥</div>` : ''}
                     <div class="card-img-wrapper">
@@ -18,16 +22,18 @@ const render = (goods) => {
                     <div class="card-body justify-content-between">
                         <div class="card-price">${item.price}</div>
                         <h5 class="card-title">${item.title}</h5>
-                        <button class="btn btn-primary">В корзину</button>
+                        <button class="btn btn-primary">удалить</button>
                     </div>
                 </div>
-            </div>
-        `);
-    });
+            `);
+        });
+    }
+     
+
 };
 
 
 
 // https://test-4abc2-default-rtdb.firebaseio.com/goods.json
 
-export default render;
+export default renderCart;

@@ -133,6 +133,22 @@ const catalog = () => {
 
 /***/ }),
 
+/***/ "./src/js/modules/filter.js":
+/*!**********************************!*\
+  !*** ./src/js/modules/filter.js ***!
+  \**********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+const filter = () => {
+  console.log('filter');
+};
+/* harmony default export */ __webpack_exports__["default"] = (filter);
+
+/***/ }),
+
 /***/ "./src/js/modules/filters.js":
 /*!***********************************!*\
   !*** ./src/js/modules/filters.js ***!
@@ -218,11 +234,22 @@ const load = url => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _renderCart__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./renderCart */ "./src/js/modules/renderCart.js");
+/* harmony import */ var _services_services__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../services/services */ "./src/js/services/services.js");
+
+
 const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector, modifierSelector) => {
-  const btn = document.querySelector(btnsSelector),
-    modal = document.querySelector(modalSelector);
+  const btn = document.getElementById(btnsSelector),
+    modal = document.querySelector(modalSelector),
+    modalTotalPrice = modal.querySelector('.cart-total > span'),
+    modalSendBtn = modal.querySelector('.cart-confirm'),
+    cartTotalPrice = document.querySelector('#cart .counter'),
+    cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : [],
+    modalWrap = document.querySelector('.cart-wrapper'),
+    goodsWrap = document.querySelector('.goods');
   //   scroll = fixScroll();
 
+  cartTotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
   function openModal() {
     setTimeout(() => {
       modal.classList.add(modifierSelector);
@@ -230,6 +257,8 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
     modal.style.display = 'flex';
     // document.body.style.overflow = 'hidden';
     // document.body.style.marginRight = `${scroll}px`;
+    Object(_renderCart__WEBPACK_IMPORTED_MODULE_0__["default"])(cart);
+    modalTotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
     attachModalEvents();
   }
   function closeModal() {
@@ -250,6 +279,7 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
   function handleOutside(e) {
     const isClickOutside = !!e.target.closest(modalContentSelector);
     if (!isClickOutside) {
+      console.log(isClickOutside);
       closeModal();
     }
   }
@@ -272,6 +302,37 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
   // }
 
   btn.addEventListener('click', openModal);
+  goodsWrap.addEventListener('click', e => {
+    e.preventDefault();
+    if (e.target.classList.contains('btn-primary')) {
+      const card = e.target.closest('.card'),
+        key = card.dataset.key,
+        goods = JSON.parse(localStorage.getItem('goods')),
+        goodsItem = goods.find(item => item.id === +key);
+      cart.push(goodsItem);
+      localStorage.setItem('cart', JSON.stringify(cart));
+    }
+  });
+  modalWrap.addEventListener('click', e => {
+    e.preventDefault();
+    if (e.target.classList.contains('btn-primary')) {
+      const card = e.target.closest('.card'),
+        key = card.dataset.key,
+        index = cart.findIndex(item => item.id === +key);
+      cart.splice(index, 1);
+      console.log(index);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      Object(_renderCart__WEBPACK_IMPORTED_MODULE_0__["default"])(cart);
+      modalTotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
+    }
+  });
+  modalSendBtn.addEventListener('click', () => {
+    Object(_services_services__WEBPACK_IMPORTED_MODULE_1__["postData"])(cart).finally(() => {
+      localStorage.removeItem('cart');
+      Object(_renderCart__WEBPACK_IMPORTED_MODULE_0__["default"])([]);
+      modalTotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
+    });
+  });
 };
 /* harmony default export */ __webpack_exports__["default"] = (modal);
 
@@ -288,11 +349,12 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
 __webpack_require__.r(__webpack_exports__);
 const render = goods => {
   const goodsWrap = document.querySelector('.goods');
+  localStorage.setItem('goods', JSON.stringify(goods));
   goodsWrap.innerHTML = '';
   goods.forEach(item => {
     goodsWrap.insertAdjacentHTML('beforeend', `
             <div class="col-12 col-md-6 col-lg-4 col-xl-3">
-                <div class="card">
+                <div class="card" data-key="${item.id}">
                     ${item.sale === true ? `<div class="card-sale">🔥Hot Sale🔥</div>` : ''}
                     <div class="card-img-wrapper">
                         <span class="card-img-top"
@@ -312,6 +374,50 @@ const render = goods => {
 // https://test-4abc2-default-rtdb.firebaseio.com/goods.json
 
 /* harmony default export */ __webpack_exports__["default"] = (render);
+
+/***/ }),
+
+/***/ "./src/js/modules/renderCart.js":
+/*!**************************************!*\
+  !*** ./src/js/modules/renderCart.js ***!
+  \**************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+const renderCart = goods => {
+  const cartWrap = document.querySelector('.cart-wrapper');
+  cartWrap.innerHTML = '';
+  if (goods.length === 0) {
+    cartWrap.insertAdjacentHTML('beforeend', `
+            <div id="cart-empty">
+                Ваша корзина пока пуста
+            </div>
+        `);
+  } else {
+    goods.forEach(item => {
+      cartWrap.insertAdjacentHTML('beforeend', `
+                <div class="card" data-key="${item.id}">
+                    ${item.sale === true ? `<div class="card-sale">🔥Hot Sale🔥</div>` : ''}
+                    <div class="card-img-wrapper">
+                        <span class="card-img-top"
+                            style="background-image: url('${item.img}')"></span>
+                    </div>
+                    <div class="card-body justify-content-between">
+                        <div class="card-price">${item.price}</div>
+                        <h5 class="card-title">${item.title}</h5>
+                        <button class="btn btn-primary">удалить</button>
+                    </div>
+                </div>
+            `);
+    });
+  }
+};
+
+// https://test-4abc2-default-rtdb.firebaseio.com/goods.json
+
+/* harmony default export */ __webpack_exports__["default"] = (renderCart);
 
 /***/ }),
 
@@ -336,6 +442,7 @@ const search = () => {
   const searchInput = document.querySelector('.search-wrapper_input'),
     minInp = document.getElementById('min'),
     maxInp = document.getElementById('max'),
+    checkBoxInp = document.getElementById('discount-checkbox'),
     labelCheckSale = document.querySelector('.filter-check_checkmark'),
     itemCatalog = document.querySelectorAll('.catalog li');
   let _category;
@@ -373,7 +480,7 @@ const search = () => {
   searchInput.addEventListener('input', () => {
     debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value, _category);
   });
-  labelCheckSale.addEventListener('click', () => {
+  checkBoxInp.addEventListener('click', () => {
     showChecked();
     debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value, _category);
   });
@@ -399,15 +506,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_modal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/modal */ "./src/js/modules/modal.js");
 /* harmony import */ var _modules_search__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/search */ "./src/js/modules/search.js");
 /* harmony import */ var _modules_catalog__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/catalog */ "./src/js/modules/catalog.js");
+/* harmony import */ var _modules_filter__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/filter */ "./src/js/modules/filter.js");
+
 
 
 
 
 window.addEventListener('DOMContentLoaded', () => {
-  Object(_modules_modal__WEBPACK_IMPORTED_MODULE_1__["default"])('#cart', '.cart', '.cart-close', '.cart-body', 'cart-confirm');
+  Object(_modules_modal__WEBPACK_IMPORTED_MODULE_1__["default"])('cart', '.cart', '.cart-close', '.cart-body', 'cart-confirm');
   Object(_modules_search__WEBPACK_IMPORTED_MODULE_2__["default"])();
   Object(_modules_load__WEBPACK_IMPORTED_MODULE_0__["default"])();
   Object(_modules_catalog__WEBPACK_IMPORTED_MODULE_3__["default"])();
+  Object(_modules_filter__WEBPACK_IMPORTED_MODULE_4__["default"])();
 });
 
 /***/ }),
@@ -423,13 +533,13 @@ window.addEventListener('DOMContentLoaded', () => {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "postData", function() { return postData; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getResource", function() { return getResource; });
-const postData = async (url, data) => {
-  const res = await fetch(url, {
+const postData = async cart => {
+  const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
     method: "POST",
     headers: {
       'Content-type': 'application/json'
     },
-    body: data
+    body: JSON.stringify(cart)
   });
   return await res.json();
 };

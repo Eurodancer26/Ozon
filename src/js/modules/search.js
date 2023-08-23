@@ -7,6 +7,7 @@ const search = () => {
     const searchInput = document.querySelector('.search-wrapper_input'),
           minInp = document.getElementById('min'),
           maxInp = document.getElementById('max'),
+          checkBoxInp = document.getElementById('discount-checkbox'),
           labelCheckSale = document.querySelector('.filter-check_checkmark'),
           itemCatalog = document.querySelectorAll('.catalog li');
 
@@ -46,7 +47,7 @@ const search = () => {
         debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value, _category);
     });
 
-    labelCheckSale.addEventListener('click', () => {
+    checkBoxInp.addEventListener('click', () => {
         showChecked();
         debounceFunc(minInp.value, maxInp.value, labelCheckSale.classList.contains('checked'), searchInput.value, _category);
     });

@@ -1,11 +1,11 @@
 
-const postData = async (url, data) => {
-    const res = await fetch(url, {
+const postData = async (cart) => {
+    const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
         method: "POST",
         headers: {
             'Content-type': 'application/json'
         },
-        body: data          
+        body: JSON.stringify(cart)          
     });
 
     return await res.json();
