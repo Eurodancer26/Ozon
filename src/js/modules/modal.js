@@ -5,15 +5,12 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
     const btn = document.getElementById(btnsSelector),
           modal = document.querySelector(modalSelector),
           modalTotalPrice = modal.querySelector('.cart-total > span'),
-          modalSendBtn = modal.querySelector('.cart-confirm'),
-          cartTotalPrice = document.querySelector('#cart .counter'),
+          TotalPrice = document.querySelector('#cart .counter'),
           cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : [],
+          modalSendBtn = modal.querySelector('.cart-confirm'),
           modalWrap = document.querySelector('.cart-wrapper'),
           goodsWrap = document.querySelector('.goods');
-        //   scroll = fixScroll();
-
-    cartTotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
-
+    
     function openModal()  {
         setTimeout(() => {
             modal.classList.add(modifierSelector);
@@ -21,6 +18,7 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
         modal.style.display = 'flex';
         // document.body.style.overflow = 'hidden';
         // document.body.style.marginRight = `${scroll}px`;
+        const cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : [];
         renderCart(cart);
         modalTotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
 
@@ -47,9 +45,10 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
 
     function handleOutside(e) {
         const isClickOutside = !!e.target.closest(modalContentSelector);
-        if (!isClickOutside) {
-            console.log(isClickOutside);
+        console.log(!isClickOutside);
+        if (!isClickOutside && !e.target.classList.contains('btn-primary')) {
             closeModal();
+            
         }
     }
 
@@ -59,62 +58,54 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
         modal.removeEventListener('click', handleOutside);
     }
 
-    // function fixScroll() {
-    //     let div = document.createElement('div');
-    //     div.classList.add('fixScroll');
-    //     div.style.width = '50px';
-    //     div.style.overflow = 'scroll';
-    //     div.style.visibility = 'hidden';
-    //     document.body.append(div);
-    //     let scrollWidth = div.offsetWidth - div.clientWidth;
-
-    //     return scrollWidth;
-    // }
-
     btn.addEventListener('click', openModal);
 
-    goodsWrap.addEventListener('click', (e) => {
-        e.preventDefault();
+    TotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
 
+    goodsWrap.addEventListener('click', (e) => {
         if (e.target.classList.contains('btn-primary')) {
-            const card = e.target.closest('.card'),
+            const cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : [],
+                  price = localStorage.getItem('price') ? JSON.parse(localStorage.getItem('price')) : [],
+                  card = e.target.closest('.card'),
                   key = card.dataset.key,
                   goods = JSON.parse(localStorage.getItem('goods')),
                   goodsItem = goods.find((item) => item.id === +key);
             
             cart.push(goodsItem);
+            price.push(goodsItem);
 
             localStorage.setItem('cart', JSON.stringify(cart));
-            
+            TotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
         }
     });
 
     modalWrap.addEventListener('click', (e) => {
-        e.preventDefault();
-
         if (e.target.classList.contains('btn-primary')) {
-            const card = e.target.closest('.card'),
-            key = card.dataset.key,
-            index = cart.findIndex((item) => item.id === +key);
+            const cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : [],
+                  card = e.target.closest('.card'),
+                  key = card.dataset.key,
+                  index = cart.findIndex((item) => item.id === +key);
 
             cart.splice(index, 1);
-
-            console.log(index);
 
             localStorage.setItem('cart', JSON.stringify(cart));
 
             renderCart(cart);
             modalTotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
+            TotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
         }
     });
 
     modalSendBtn.addEventListener('click', () => {
+        const cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : [];
+              
         postData(cart).finally(() => {
             localStorage.removeItem('cart');
-
+            
             renderCart([]);
+            modalTotalPrice.textContent =  0;
+            TotalPrice.textContent = 0;
 
-            modalTotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
         });
     });
 };

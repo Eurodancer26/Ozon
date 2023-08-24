@@ -1,17 +1,19 @@
-const renderCart = (goods) => {
+const renderCart = (cart) => {
     
     const cartWrap = document.querySelector('.cart-wrapper');
 
+    localStorage.setItem('cart', JSON.stringify(cart));
+
     cartWrap.innerHTML = '';
 
-    if (goods.length === 0) {
+    if (cart.length === 0) {
         cartWrap.insertAdjacentHTML('beforeend', `
             <div id="cart-empty">
                 Ваша корзина пока пуста
             </div>
         `);
     } else {
-        goods.forEach(item => {       
+        cart.forEach(item => {       
             cartWrap.insertAdjacentHTML('beforeend', `
                 <div class="card" data-key="${item.id}">
                     ${item.sale === true ? `<div class="card-sale">🔥Hot Sale🔥</div>` : ''}

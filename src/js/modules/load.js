@@ -1,4 +1,3 @@
-import {postData} from '../services/services';
 import {getResource} from '../services/services';
 import render from './render';
 

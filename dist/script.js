@@ -133,22 +133,6 @@ const catalog = () => {
 
 /***/ }),
 
-/***/ "./src/js/modules/filter.js":
-/*!**********************************!*\
-  !*** ./src/js/modules/filter.js ***!
-  \**********************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-const filter = () => {
-  console.log('filter');
-};
-/* harmony default export */ __webpack_exports__["default"] = (filter);
-
-/***/ }),
-
 /***/ "./src/js/modules/filters.js":
 /*!***********************************!*\
   !*** ./src/js/modules/filters.js ***!
@@ -215,7 +199,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _render__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./render */ "./src/js/modules/render.js");
 
 
-
 const load = url => {
   Object(_services_services__WEBPACK_IMPORTED_MODULE_0__["getResource"])(url).then(goods => {
     Object(_render__WEBPACK_IMPORTED_MODULE_1__["default"])(goods);
@@ -242,14 +225,11 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
   const btn = document.getElementById(btnsSelector),
     modal = document.querySelector(modalSelector),
     modalTotalPrice = modal.querySelector('.cart-total > span'),
-    modalSendBtn = modal.querySelector('.cart-confirm'),
-    cartTotalPrice = document.querySelector('#cart .counter'),
+    TotalPrice = document.querySelector('#cart .counter'),
     cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : [],
+    modalSendBtn = modal.querySelector('.cart-confirm'),
     modalWrap = document.querySelector('.cart-wrapper'),
     goodsWrap = document.querySelector('.goods');
-  //   scroll = fixScroll();
-
-  cartTotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
   function openModal() {
     setTimeout(() => {
       modal.classList.add(modifierSelector);
@@ -257,6 +237,7 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
     modal.style.display = 'flex';
     // document.body.style.overflow = 'hidden';
     // document.body.style.marginRight = `${scroll}px`;
+    const cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : [];
     Object(_renderCart__WEBPACK_IMPORTED_MODULE_0__["default"])(cart);
     modalTotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
     attachModalEvents();
@@ -278,8 +259,8 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
   const handleEscape = e => e.key === 'Escape' ? closeModal() : null;
   function handleOutside(e) {
     const isClickOutside = !!e.target.closest(modalContentSelector);
-    if (!isClickOutside) {
-      console.log(isClickOutside);
+    console.log(!isClickOutside);
+    if (!isClickOutside && !e.target.classList.contains('btn-primary')) {
       closeModal();
     }
   }
@@ -288,49 +269,42 @@ const modal = (btnsSelector, modalSelector, closeSelector, modalContentSelector,
     document.removeEventListener('keydown', handleEscape);
     modal.removeEventListener('click', handleOutside);
   }
-
-  // function fixScroll() {
-  //     let div = document.createElement('div');
-  //     div.classList.add('fixScroll');
-  //     div.style.width = '50px';
-  //     div.style.overflow = 'scroll';
-  //     div.style.visibility = 'hidden';
-  //     document.body.append(div);
-  //     let scrollWidth = div.offsetWidth - div.clientWidth;
-
-  //     return scrollWidth;
-  // }
-
   btn.addEventListener('click', openModal);
+  TotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
   goodsWrap.addEventListener('click', e => {
-    e.preventDefault();
     if (e.target.classList.contains('btn-primary')) {
-      const card = e.target.closest('.card'),
+      const cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : [],
+        price = localStorage.getItem('price') ? JSON.parse(localStorage.getItem('price')) : [],
+        card = e.target.closest('.card'),
         key = card.dataset.key,
         goods = JSON.parse(localStorage.getItem('goods')),
         goodsItem = goods.find(item => item.id === +key);
       cart.push(goodsItem);
+      price.push(goodsItem);
       localStorage.setItem('cart', JSON.stringify(cart));
+      TotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
     }
   });
   modalWrap.addEventListener('click', e => {
-    e.preventDefault();
     if (e.target.classList.contains('btn-primary')) {
-      const card = e.target.closest('.card'),
+      const cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : [],
+        card = e.target.closest('.card'),
         key = card.dataset.key,
         index = cart.findIndex(item => item.id === +key);
       cart.splice(index, 1);
-      console.log(index);
       localStorage.setItem('cart', JSON.stringify(cart));
       Object(_renderCart__WEBPACK_IMPORTED_MODULE_0__["default"])(cart);
       modalTotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
+      TotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
     }
   });
   modalSendBtn.addEventListener('click', () => {
+    const cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : [];
     Object(_services_services__WEBPACK_IMPORTED_MODULE_1__["postData"])(cart).finally(() => {
       localStorage.removeItem('cart');
       Object(_renderCart__WEBPACK_IMPORTED_MODULE_0__["default"])([]);
-      modalTotalPrice.textContent = cart.reduce((acc, goodsItem) => acc + goodsItem.price, 0);
+      modalTotalPrice.textContent = 0;
+      TotalPrice.textContent = 0;
     });
   });
 };
@@ -386,17 +360,18 @@ const render = goods => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-const renderCart = goods => {
+const renderCart = cart => {
   const cartWrap = document.querySelector('.cart-wrapper');
+  localStorage.setItem('cart', JSON.stringify(cart));
   cartWrap.innerHTML = '';
-  if (goods.length === 0) {
+  if (cart.length === 0) {
     cartWrap.insertAdjacentHTML('beforeend', `
             <div id="cart-empty">
                 Ваша корзина пока пуста
             </div>
         `);
   } else {
-    goods.forEach(item => {
+    cart.forEach(item => {
       cartWrap.insertAdjacentHTML('beforeend', `
                 <div class="card" data-key="${item.id}">
                     ${item.sale === true ? `<div class="card-sale">🔥Hot Sale🔥</div>` : ''}
@@ -506,8 +481,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_modal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/modal */ "./src/js/modules/modal.js");
 /* harmony import */ var _modules_search__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/search */ "./src/js/modules/search.js");
 /* harmony import */ var _modules_catalog__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/catalog */ "./src/js/modules/catalog.js");
-/* harmony import */ var _modules_filter__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/filter */ "./src/js/modules/filter.js");
-
 
 
 
@@ -517,7 +490,6 @@ window.addEventListener('DOMContentLoaded', () => {
   Object(_modules_search__WEBPACK_IMPORTED_MODULE_2__["default"])();
   Object(_modules_load__WEBPACK_IMPORTED_MODULE_0__["default"])();
   Object(_modules_catalog__WEBPACK_IMPORTED_MODULE_3__["default"])();
-  Object(_modules_filter__WEBPACK_IMPORTED_MODULE_4__["default"])();
 });
 
 /***/ }),

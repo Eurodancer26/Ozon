@@ -1,12 +1,13 @@
 const render = (goods) => {
-    
     const goodsWrap = document.querySelector('.goods');
+
 
     localStorage.setItem('goods', JSON.stringify(goods));
     
     goodsWrap.innerHTML = ''; 
      
-    goods.forEach(item => {       
+    goods.forEach(item => {
+  
         goodsWrap.insertAdjacentHTML('beforeend', `
             <div class="col-12 col-md-6 col-lg-4 col-xl-3">
                 <div class="card" data-key="${item.id}">
